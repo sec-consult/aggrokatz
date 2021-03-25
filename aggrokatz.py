@@ -166,7 +166,7 @@ class BaconFileReader:
 			raise Exception('What whence?')
 
 def beacon_top_callback(bids):
-	engine.message('showing menu for: ' + ', '.format(bids))
+	engine.debug('')
 
 def parse_lsass(bid, filepath, boffilepath, chunksize, packages = ['all'], outputs = ['text']):
 	engine.message('parse_lsass invoked')
@@ -389,6 +389,21 @@ menu = gui.popup('beacon_top', callback=beacon_top_callback, children=[
 	]),
 ])
 gui.register(menu)
+
+engine.message('')
+engine.message('')
+engine.message('****************************************************************')
+engine.message('*                                                              *')
+engine.message('* aggKatz - pypyKatz Agressor plugin powered by pycobalt       *')
+engine.message('*                                                              *')
+engine.message('*                                                              *')
+engine.message('* Author: Tamas Jos @skelsec                                   *')
+engine.message('* Sponsor: Sec-Consult                                         *')
+engine.message('* Send issues here: https://github.com/sec-consult/aggrokatz/  *')
+engine.message('*                                                              *')
+engine.message('****************************************************************')
+engine.message('')
+engine.message('')
 
 # read commands from cobaltstrike. must be called last
 engine.loop()
