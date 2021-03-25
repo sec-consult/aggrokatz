@@ -12,6 +12,7 @@ While parsing lsass/registry files on the remote end please don't interact with 
 
 # Setup
  - make sure that pycobalt's `aggressor.cna` file is set up and is aware of your python interperer's location
+ - Change the pycobalt_path in aggrokatz.cna to point to pycobalt.cna
  - in CS use the `View > Script Console` and `Cobalt Strike > Script Manager` windows. Using `Script Manager` load the `aggkatz.cna` script.
 
 # Usage
