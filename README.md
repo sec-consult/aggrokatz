@@ -8,7 +8,7 @@ In the future this project aims to provide additional features for covert operat
 # IMPORTANT NOTES - PLEASE READ THIS
 LSASS/Registry dumping is not the goal of this project, only parsing. Reasons: 
  1. Multiple techniques for dumping are already implemented from CS and widely available to the public. 
- 2. We want to keep our own private.
+ 2. We want to keep our dumping technique private.
 
 In CS client, do not use "reload" nor try to manually unload then reload the script if you modified it. You MUST unload it, close the client and start it anew, then load the modified script. Otherwise you will have multiple versions running simultaneously and a ton of errors and weird behaviours will happen!  
 While parsing lsass/registry files on the remote end please don't interact with the specific beacon you started the script on. Normally it wouldn't cause any problems, but I can't give any guarantees.
