@@ -50,8 +50,8 @@ While parsing lsass/registry files on the remote end please don't interact with 
 The file read BOF currently supports file reads up to 4Gb. This can be extended with some modifications but so far such large files haven't been observed.
 
 # How it works
-## TLDR; 
-`pypykatz` performs a series of file read operations on the beacon using a specially crafted BOF which allows reading the file contents in chunks. The LSASS/Registry hive files are processed chunk-by-chunk. This allows `pypykatz` to extract all secrets from the files without reading the whole file, only grabbing the necessary chunks where the secrets are located.
+## TL;DR 
+Normally `pypykatz`'s parser performs a series of file read operations on disk, but with the help of aggrokatz these read operations are tunneled to the beacon using a specially crafted BOF (Beacon Object File) which allows reading the remote file contents in chunks. This allows `pypykatz` to extract all secrets from the remote files without reading the whole file, only grabbing the necessary chunks where the secrets are located.
 
 ## In-depth  
 To get the full picture of the entire process, there are two parts we'd need to highlight:
@@ -59,10 +59,10 @@ To get the full picture of the entire process, there are two parts we'd need to 
  2. how `pypykatz` performs the credential extraction without reading the whole file
 
 ### pypykatz integration to CobaltStrike
-CobaltStrike (agent) is written in Java, pypykatz is written in python. This is a problem. Lucky for us an unknown entity has created [`pycobalt`](https://github.com/dcsync/pycobalt) which provides a neat interface between the two worlds complete with usefule APIs which can be invoked directly from python. Despite `pycobalt` is a marvellous piece of engineering, there are some problems/drawbacks with it that we need to point out:
+CobaltStrike (agent) is written in Java, pypykatz is written in python. This is a problem. Lucky for us an unknown entity has created [`pycobalt`](https://github.com/dcsync/pycobalt) which provides a neat interface between the two worlds complete with usefule APIs which can be invoked directly from python. Despite `pycobalt` being a marvellous piece of engineering, there are some problems/drawbacks with it that we need to point out:
  1. About trusting the `pycobalt` project:
   - We have tried to reach out to the author but we got no reply.
-  - We cannot guarantee that the `pycobalt` project will be mainted in the future.
+  - We cannot guarantee that the `pycobalt` project will be maintained in the future.
   - We do not control any aspect of `pycobalt`'s development.
  2. About technical issues observed:
   - Generally there are some encoding issues between `pycobalt` and `CobaltSrike`. This results in some API calls which would return bytes that can't be used because some bytes get mangled by the encoder. By checking the code we conclude that most encoding/decoding issues are because `pycobalt` uses STDOUT/STDIN to communicate with the Java process 
