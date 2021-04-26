@@ -91,3 +91,7 @@ After parsing around a 100 LSASS dumps using this method, we can state the follo
 ### Drawbacks
  - For each read operation a BOF needs to be uploaded to the beacon. (we secretly hope someone from CobaltSrike will look at this article and decide to implement basic file reading operations as a default, so we can skip using this solution)
  - The number of read operations can be problematic if you are using a beacon with a really large jitter/sleep.
+
+# Kudos
+dcsync - author of [`pycobalt`](https://github.com/dcsync/pycobalt)
+Nicol Jos [`@shinepaw`](https://twitter.com/shinepaw) - logo design
