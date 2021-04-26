@@ -1,5 +1,5 @@
 # aggrokatz
-
+![aggro_card](https://user-images.githubusercontent.com/19204702/116058797-7d1cdb80-a680-11eb-9287-f888e860e6c4.jpg)
 # What is this
 `aggrokatz` is an Aggressor plugin extension for [`CobaltStrike`](https://www.cobaltstrike.com) which enables [`pypykatz`](https://github.com/skelsec/pypykatz) to interface with the beacons remotely.  
 The current version of `aggrokatz` allows `pypykatz` to parse LSASS dump files and Registry hive files to extract credentials and other secrets stored without downloading the file and without uploading any suspicious code to the beacon (CS is already there anyhow).
