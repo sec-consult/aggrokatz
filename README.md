@@ -93,5 +93,5 @@ After parsing around a 100 LSASS dumps using this method, we can state the follo
  - The number of read operations can be problematic if you are using a beacon with a really large jitter/sleep.
 
 # Kudos
-dcsync - author of [`pycobalt`](https://github.com/dcsync/pycobalt)
+dcsync - author of [`pycobalt`](https://github.com/dcsync/pycobalt)  
 Nicol Jos [`@shinepaw`](https://twitter.com/shinepaw) - logo design
