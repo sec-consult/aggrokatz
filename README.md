@@ -9,7 +9,7 @@ We have published a short [`blog post`](https://r.sec-consult.com/aggrokatz) for
 
 # IMPORTANT NOTES - PLEASE READ THIS
 LSASS/Registry dumping is not the goal of this project, only parsing. Reasons: 
- 1. Multiple techniques for dumping are already implemented from Cobalt Strike (CS) and widely available to the public. 
+ 1. Multiple techniques for dumping are already implemented from Cobalt Strike (CS) and widely available to the public. Recently we switched to using a modified version of [`CredBandit`](https://github.com/xforcered/CredBandit) that dumps the raw bytes to disk instead of base64. Cool tool, check it out.
  2. We want to keep our dumping technique private.
 
 In CS client, do not use "reload" nor try to manually unload then reload the script if you modified it. You MUST unload it, close the client and start it anew, then load the modified script. Otherwise you will have multiple versions running simultaneously and a ton of errors and weird behaviours will happen!  
@@ -96,4 +96,6 @@ After parsing around a 100 LSASS dumps using this method, we can state the follo
 
 # Kudos
 dcsync - author of [`pycobalt`](https://github.com/dcsync/pycobalt)  
+@anthemtotheego [`Twitter`](https://twitter.com/anthemtotheego) - Creator of CredBandit  
 Nicol Jos [`@shinepaw`](https://twitter.com/shinepaw) - logo design
+
