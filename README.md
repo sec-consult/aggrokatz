@@ -2,21 +2,23 @@
 ![aggro_card](https://user-images.githubusercontent.com/19204702/116058797-7d1cdb80-a680-11eb-9287-f888e860e6c4.jpg)
 # What is this
 `aggrokatz` is an Aggressor plugin extension for [`CobaltStrike`](https://www.cobaltstrike.com) which enables [`pypykatz`](https://github.com/skelsec/pypykatz) to interface with the beacons remotely.  
-The current version of `aggrokatz` allows `pypykatz` to parse LSASS dump files and Registry hive files to extract credentials and other secrets stored without downloading the file and without uploading any suspicious code to the beacon (CS is already there anyhow).
-In the future this project aims to provide additional features for covert operations suchs as searching and decrypting all DPAPI secrets/kerberoasting/etc...
+The current version of `aggrokatz` allows `pypykatz` to parse LSASS dump files and Registry hive files to extract credentials and other secrets stored without downloading the file and without uploading any suspicious code to the beacon (Cobalt Strike is already there anyhow).
+In the future this project aims to provide additional features for covert operations such as searching and decrypting all DPAPI secrets/kerberoasting/etc.
+
+We have published a short [`blog post`](https://r.sec-consult.com/aggrokatz) for this tool release which also includes some screenshots.
 
 # IMPORTANT NOTES - PLEASE READ THIS
 LSASS/Registry dumping is not the goal of this project, only parsing. Reasons: 
- 1. Multiple techniques for dumping are already implemented from CS and widely available to the public. 
+ 1. Multiple techniques for dumping are already implemented from Cobalt Strike (CS) and widely available to the public. 
  2. We want to keep our dumping technique private.
 
 In CS client, do not use "reload" nor try to manually unload then reload the script if you modified it. You MUST unload it, close the client and start it anew, then load the modified script. Otherwise you will have multiple versions running simultaneously and a ton of errors and weird behaviours will happen!  
-While parsing lsass/registry files on the remote end please don't interact with the specific beacon you started the script on. Normally it wouldn't cause any problems, but I can't give any guarantees.
+While parsing LSASS/registry files on the remote end please don't interact with the specific beacon you started the script on. Normally it wouldn't cause any problems, but I can't give any guarantees.
 
 # Install
  - You will need [`pycobalt`](https://github.com/dcsync/pycobalt) installed and set up. There is a readme on their github page.  
  - You will need to install [`pypykatz`](https://github.com/skelsec/pypykatz/) version must be `>=0.4.8`
- - You will need cobaltstrike
+ - You will need Cobalt Strike
 
 # Setup
  - make sure that pycobalt's `aggressor.cna` file is set up and is aware of your python interpreter's location
@@ -89,7 +91,7 @@ After parsing around a 100 LSASS dumps using this method, we can state the follo
  - Time to parse only relies on your jitter/sleep configuration so measuring it is pointless.
 
 ### Drawbacks
- - For each read operation a BOF needs to be uploaded to the beacon. (we secretly hope someone from CobaltSrike will look at this article and decide to implement basic file reading operations as a default, so we can skip using this solution)
+ - For each read operation a BOF needs to be uploaded to the beacon. (we secretly hope someone from CobaltSrike will look at this article and decide to implement basic file reading operations as a default, so we can skip using this solution).
  - The number of read operations can be problematic if you are using a beacon with a really large jitter/sleep.
 
 # Kudos
